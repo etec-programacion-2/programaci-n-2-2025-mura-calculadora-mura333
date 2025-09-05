@@ -7,8 +7,13 @@ fun main() {
     val suma = Suma()
     val resta = Resta()
     val seno = Seno()
+    val division = Division()
+    val multiplicacion = Multiplicacion()
 
     println("Suma: ${suma.ejecutar(2.0, 3.0, 4.0)}")
     println("Resta: ${resta.ejecutar(10.0, 3.0, 2.0)}")
     println("Sen(π/4): ${seno.ejecutar(kotlin.math.PI / 4)}")
+    println("Multiplicacion: ${multiplicacion.ejecutar(2.0, 3.0, 4.0)}")
+    println("Division: ${division.ejecutar(10.0, 2.0)}")
+
 }
