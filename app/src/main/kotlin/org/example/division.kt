@@ -1,9 +1,12 @@
+// DivisionOperation.kt
 package org.example
 
-class Division : Operacion {
-    override fun ejecutar(vararg operandos: Double): Double {
-        require(operandos.size == 2) { "La división requiere exactamente dos operandos" }
-        require(operandos[1] != 0.0) { "No se puede dividir por cero" }
-        return operandos[0] / operandos[1]
+class DivisionOperation : Operation {
+    override fun execute(operandos: List<Double>): Double {
+        if (operandos.isEmpty()) return 0.0
+        return operandos.drop(1).fold(operandos.first()) { acc, num ->
+            if (num == 0.0) throw IllegalArgumentException("No se puede dividir entre cero")
+            acc / num
+        }
     }
 }

@@ -1,7 +1,8 @@
-package org.example;
-// Clase Suma
-class Suma : Operacion {
-    override fun ejecutar(vararg operandos: Double): Double {
+// AdditionOperation.kt
+package org.example
+
+class AdditionOperation : Operation {
+    override fun execute(operandos: List<Double>): Double {
         return operandos.sum()
     }
 }

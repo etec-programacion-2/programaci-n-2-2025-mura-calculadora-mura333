@@ -1,6 +1,9 @@
+// MultiplicationOperation.kt
 package org.example
-class Multiplicacion : Operacion {
-    override fun ejecutar(vararg operandos: Double): Double {
-        return operandos.fold(1.0) { acc, i -> acc * i }
+
+class MultiplicationOperation : Operation {
+    override fun execute(operandos: List<Double>): Double {
+        if (operandos.isEmpty()) return 0.0
+        return operandos.reduce { acc, num -> acc * num }
     }
 }
