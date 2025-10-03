@@ -1,6 +1,5 @@
-// Operation.kt
 package org.example
 
-interface Operation {
-    fun execute(operandos: List<Double>): Double
+interface Operacion {
+    fun ejecutar(a: Double, b: Double): Double
 }

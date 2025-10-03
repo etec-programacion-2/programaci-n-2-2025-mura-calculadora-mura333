@@ -1,9 +1,5 @@
-// MultiplicationOperation.kt
 package org.example
 
-class MultiplicationOperation : Operation {
-    override fun execute(operandos: List<Double>): Double {
-        if (operandos.isEmpty()) return 0.0
-        return operandos.reduce { acc, num -> acc * num }
-    }
+class Multiplicacion : Operacion {
+    override fun ejecutar(a: Double, b: Double): Double = a * b
 }
