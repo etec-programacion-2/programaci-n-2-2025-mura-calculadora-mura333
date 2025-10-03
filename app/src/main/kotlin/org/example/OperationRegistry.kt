@@ -1,14 +1,26 @@
-// OperationRegistry.kt
-package org.example
+package org.example;
 
 class OperationRegistry {
-    private val operations = mutableMapOf<String, Operation>()
+    private val historial: MutableList<Cuenta> = mutableListOf()
 
-    fun register(symbol: String, operation: Operation) {
-        operations[symbol] = operation
+    fun registrarOperacion(operando1: Double, simbolo: String, operando2: Double, resultado: Double) {
+        val cuenta = Cuenta(operando1, simbolo, operando2, resultado)
+        historial.add(cuenta)
     }
 
-    fun getOperation(symbol: String): Operation? {
-        return operations[symbol]
+    fun mostrarHistorial() {
+        println("\n=== Historial de Operaciones ===")
+        println("Operando1 | Operador | Operando2 | Resultado")
+        println("----------------------------------------")
+
+        historial.forEachIndexed { index, cuenta ->
+            println("${cuenta.operando1}      |    ${cuenta.simbolo}    |    ${cuenta.operando2}      |    ${cuenta.resultado}")
+        }
+        println("----------------------------------------")
+        println("Total de operaciones: ${historial.size}")
+    }
+
+    fun obtenerHistorial(): List<Cuenta> {
+        return historial.toList()
     }
 }

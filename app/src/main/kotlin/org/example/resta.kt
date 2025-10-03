@@ -1,9 +1,6 @@
-// SubtractionOperation.kt
-package org.example
+package org.example;
 
-class SubtractionOperation : Operation {
-    override fun execute(operandos: List<Double>): Double {
-        if (operandos.isEmpty()) return 0.0
-        return operandos.drop(1).fold(operandos.first()) { acc, num -> acc - num }
-    }
+class Resta : Operacion {
+    override fun ejecutar(a: Double, b: Double): Double = a - b
 }
+
