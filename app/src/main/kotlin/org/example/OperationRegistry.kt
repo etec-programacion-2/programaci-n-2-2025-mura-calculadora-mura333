@@ -1,26 +1,27 @@
 package org.example;
+object OperationRegistry {
+    private val operations = mutableMapOf<String, Operacion>()
 
-class OperationRegistry {
-    private val historial: MutableList<Cuenta> = mutableListOf()
+    init {
+        // Operaciones básicas
+        registrar("+", Suma())
+        registrar("-", Resta())
+        registrar("*", Multiplicacion())
+        registrar("/", Division())
 
-    fun registrarOperacion(operando1: Double, simbolo: String, operando2: Double, resultado: Double) {
-        val cuenta = Cuenta(operando1, simbolo, operando2, resultado)
-        historial.add(cuenta)
+        // Operaciones científicas
+        registrar("sen", Seno())
+        registrar("cos", Coseno())
+        registrar("tan", Tangente())
+        registrar("pow", Potencia())
+        registrar("raiz", Raiz())
     }
 
-    fun mostrarHistorial() {
-        println("\n=== Historial de Operaciones ===")
-        println("Operando1 | Operador | Operando2 | Resultado")
-        println("----------------------------------------")
-
-        historial.forEachIndexed { index, cuenta ->
-            println("${cuenta.operando1}      |    ${cuenta.simbolo}    |    ${cuenta.operando2}      |    ${cuenta.resultado}")
-        }
-        println("----------------------------------------")
-        println("Total de operaciones: ${historial.size}")
+    fun registrar(simbolo: String, operacion: Operacion) {
+        operations[simbolo] = operacion
     }
 
-    fun obtenerHistorial(): List<Cuenta> {
-        return historial.toList()
-    }
+    fun obtener(simbolo: String): Operacion? = operations[simbolo]
+
+    fun obtenerOperaciones(): Set<String> = operations.keys
 }

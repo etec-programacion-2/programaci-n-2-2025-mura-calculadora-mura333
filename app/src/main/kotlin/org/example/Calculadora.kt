@@ -1,12 +1,32 @@
-// Calculadora.kt
 package org.example
+class Calculadora {
+    fun calcular(expresion: String): Double {
+        val partes = expresion.split(" ").filter { it.isNotBlank() }
 
-class Calculadora(private val registry: OperationRegistry) {
+        if (partes.size < 2) {
+            throw IllegalArgumentException("Expresión debe tener al menos un número y un operador")
+        }
 
-    fun calcular(simbolo: String, operandos: List<Double>): Double {
-        val operation = registry.getOperation(simbolo)
-            ?: throw IllegalArgumentException("Operación '$simbolo' no registrada")
+        val operador = partes.last()
+        val operandos = partes.dropLast(1).map { it.toDouble() }
 
-        return operation.execute(operandos)
+        val operacion = OperationRegistry.obtener(operador)
+            ?: throw IllegalArgumentException("Operación '$operador' no soportada")
+
+        // Para operaciones con un solo operando
+        if (operandos.size == 1) {
+            return operacion.ejecutar(operandos[0], 0.0)
+        }
+        // Para operaciones con dos operandos
+        else if (operandos.size == 2) {
+            return operacion.ejecutar(operandos[0], operandos[1])
+        }
+        else {
+            throw IllegalArgumentException("Demasiados operandos")
+        }
+    }
+
+    fun obtenerOperacionesDisponibles(): Set<String> {
+        return OperationRegistry.obtenerOperaciones()
     }
 }
