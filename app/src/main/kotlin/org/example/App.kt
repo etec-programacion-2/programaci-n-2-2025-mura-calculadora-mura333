@@ -1,13 +1,11 @@
 package org.example
+
 fun main() {
-    val registry = OperationRegistry()
-    registry.register("+", AdditionOperation())
-    registry.register("-", SubtractionOperation())
-    registry.register("*", MultiplicationOperation())
-    registry.register("/", DivisionOperation())
-    val calculadora = Calculadora(registry)
-    println("Suma: " + calculadora.calcular("+", listOf(10.0, 5.0, 2.0)))
-    println("Resta: " + calculadora.calcular("-", listOf(10.0, 5.0, 2.0)))
-    println("Multiplicación: " + calculadora.calcular("*", listOf(2.0, 3.0, 4.0)))
-    println("División: " + calculadora.calcular("/", listOf(20.0, 2.0, 2.0)))
+    val calc = Calculadora()
+    val operaciones = listOf("5 3 +", "10 4 -", "6 7 *", "15 3 /",
+        "30 sen", "60 cos", "45 tan", "2 3 pow", "16 raiz",
+        "3 4 5 * +", "7 2 3 * -", "5 0 /")
+
+    operaciones.forEach { try { println("$it = ${calc.calcular(it)}") }
+    catch (e: Exception) { println("$it -> ${e.message}") } }
 }
