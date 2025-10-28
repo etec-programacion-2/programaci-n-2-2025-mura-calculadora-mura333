@@ -1,5 +1,4 @@
-package org.example
-
+package org.example;
 object OperationRegistry {
     private val operations = mutableMapOf<String, Operacion>()
 
@@ -22,11 +21,7 @@ object OperationRegistry {
         operations[simbolo] = operacion
     }
 
-    fun obtener(simbolo: String): Operacion? {
-        return operations[simbolo]
-    }
+    fun obtener(simbolo: String): Operacion? = operations[simbolo]
 
-    fun obtenerOperaciones(): Set<String> {
-        return operations.keys
-    }
+    fun obtenerOperaciones(): Set<String> = operations.keys
 }

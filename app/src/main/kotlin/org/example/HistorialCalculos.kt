@@ -1,6 +1,4 @@
-package org.example;
-
-
+package org.example
 class HistorialCalculos {
     private val operaciones: MutableList<Operacion> = mutableListOf()
 

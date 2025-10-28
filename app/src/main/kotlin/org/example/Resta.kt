@@ -1,10 +1,7 @@
 package org.example
 
-
 class Resta : Operacion {
-    override fun ejecutar(operandos: List<Double>): Double {
-        return operandos[0] - operandos[1]
+    override fun ejecutar(a: Double, b: Double): Double {
+        return a - b
     }
-    override val numeroOperandos: Int = 2
 }
-
