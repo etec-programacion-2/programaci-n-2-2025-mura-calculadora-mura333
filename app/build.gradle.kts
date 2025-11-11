@@ -11,6 +11,10 @@ plugins {
 
     // Apply the application plugin to add support for building a CLI application in Java.
     application
+
+    // ✨ CONFIGURACIÓN JAVA-FX: Añadir el plugin de JavaFX
+    // Este plugin es esencial para configurar las dependencias y los argumentos de la VM.
+    id("org.openjfx.javafxplugin") version "0.1.0" // Asegúrate de usar la versión estable más reciente
 }
 
 repositories {
@@ -29,6 +33,17 @@ dependencies {
 
     // This dependency is used by the application.
     implementation(libs.guava)
+
+    // Las dependencias de JavaFX (como javafx.controls) se añadirán automáticamente
+    // gracias al plugin y la configuración 'javafx { ... }'.
+}
+
+// ✨ CONFIGURACIÓN JAVA-FX: Define la versión y los módulos a usar.
+javafx {
+    // Usamos Java 21, así que la versión de JavaFX debe ser compatible.
+    version = "21"
+    // Módulos necesarios para crear la ventana y usar controles básicos.
+    modules("javafx.controls", "javafx.fxml")
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
@@ -39,8 +54,9 @@ java {
 }
 
 application {
-    // Define the main class for the application.
-    mainClass = "org.example.AppKt"
+    // Define la clase principal para la aplicación. Cambiamos al punto de entrada de JavaFX.
+    // Asumimos que la clase JavaFX se llama 'AppFX.kt' en el paquete org.example
+    mainClass = "org.example.AppFX" // Cambiado de AppKt a AppFX
 }
 
 tasks.named<Test>("test") {
