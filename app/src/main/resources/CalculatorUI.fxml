@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.text.Font?>
+
+<!--
+    fx:controller: Define la clase controladora en Kotlin (org.example.CalculatorController)
+    que manejará los eventos de los botones.
+-->
+<VBox fx:controller="org.example.CalculatorController"
+      xmlns:fx="http://javafx.com/fxml/1"
+      prefWidth="350.0"
+      alignment="TOP_CENTER"
+      spacing="10.0"
+      style="-fx-background-color: #f0f0f0; -fx-padding: 15;">
+
+    <!--
+        Pantalla de Resultados (Display)
+        fx:id="displayTextField" es crucial para conectar este elemento con el Controller.
+    -->
+    <TextField fx:id="displayTextField"
+               editable="false"
+               alignment="CENTER_RIGHT"
+               prefHeight="70.0"
+               style="-fx-font-size: 24pt; -fx-background-color: #ffffff; -fx-border-color: #ccc; -fx-border-width: 1; -fx-padding: 10;">
+        <font>
+            <Font name="Monospaced Bold" size="24.0" />
+        </font>
+    </TextField>
+
+    <!--
+        GridPane para los botones
+    -->
+    <GridPane hgap="8.0" vgap="8.0" alignment="CENTER">
+        <columnConstraints>
+            <ColumnConstraints percentWidth="20.0" hgrow="SOMETIMES" />
+            <ColumnConstraints percentWidth="20.0" hgrow="SOMETIMES" />
+            <ColumnConstraints percentWidth="20.0" hgrow="SOMETIMES" />
+            <ColumnConstraints percentWidth="20.0" hgrow="SOMETIMES" />
+            <ColumnConstraints percentWidth="20.0" hgrow="SOMETIMES" />
+        </columnConstraints>
+
+        <!-- Fila 1 (Funciones Científicas y Borrado) -->
+        <Button text="sen" GridPane.rowIndex="0" GridPane.columnIndex="0" maxWidth="Infinity" style="-fx-font-size: 14pt; -fx-background-color: #d1e7dd; -fx-text-fill: #084298;" onAction="#handleOperation"/>
+        <Button text="cos" GridPane.rowIndex="0" GridPane.columnIndex="1" maxWidth="Infinity" style="-fx-font-size: 14pt; -fx-background-color: #d1e7dd; -fx-text-fill: #084298;" onAction="#handleOperation"/>
+        <Button text="tan" GridPane.rowIndex="0" GridPane.columnIndex="2" maxWidth="Infinity" style="-fx-font-size: 14pt; -fx-background-color: #d1e7dd; -fx-text-fill: #084298;" onAction="#handleOperation"/>
+        <Button text="DEL" GridPane.rowIndex="0" GridPane.columnIndex="3" maxWidth="Infinity" style="-fx-font-size: 14pt; -fx-background-color: #f8d7da; -fx-text-fill: #842029;" onAction="#handleDelete"/>
+        <Button text="CLR" GridPane.rowIndex="0" GridPane.columnIndex="4" maxWidth="Infinity" style="-fx-font-size: 14pt; -fx-background-color: #f8d7da; -fx-text-fill: #842029;" onAction="#handleClear"/>
+
+        <!-- Fila 2 (7, 8, 9, Operadores) -->
+        <Button text="7" GridPane.rowIndex="1" GridPane.columnIndex="0" maxWidth="Infinity" style="-fx-font-size: 14pt;" onAction="#handleNumber"/>
+        <Button text="8" GridPane.rowIndex="1" GridPane.columnIndex="1" maxWidth="Infinity" style="-fx-font-size: 14pt;" onAction="#handleNumber"/>
+        <Button text="9" GridPane.rowIndex="1" GridPane.columnIndex="2" maxWidth="Infinity" style="-fx-font-size: 14pt;" onAction="#handleNumber"/>
+        <Button text="/" GridPane.rowIndex="1" GridPane.columnIndex="3" maxWidth="Infinity" style="-fx-font-size: 14pt; -fx-background-color: #ffe599;" onAction="#handleOperation"/>
+        <Button text="pow" GridPane.rowIndex="1" GridPane.columnIndex="4" maxWidth="Infinity" style="-fx-font-size: 14pt; -fx-background-color: #ffe599;" onAction="#handleOperation"/>
+
+        <!-- Fila 3 (4, 5, 6, Operadores) -->
+        <Button text="4" GridPane.rowIndex="2" GridPane.columnIndex="0" maxWidth="Infinity" style="-fx-font-size: 14pt;" onAction="#handleNumber"/>
+        <Button text="5" GridPane.rowIndex="2" GridPane.columnIndex="1" maxWidth="Infinity" style="-fx-font-size: 14pt;" onAction="#handleNumber"/>
+        <Button text="6" GridPane.rowIndex="2" GridPane.columnIndex="2" maxWidth="Infinity" style="-fx-font-size: 14pt;" onAction="#handleNumber"/>
+        <Button text="*" GridPane.rowIndex="2" GridPane.columnIndex="3" maxWidth="Infinity" style="-fx-font-size: 14pt; -fx-background-color: #ffe599;" onAction="#handleOperation"/>
+        <Button text="raiz" GridPane.rowIndex="2" GridPane.columnIndex="4" maxWidth="Infinity" style="-fx-font-size: 14pt; -fx-background-color: #ffe599;" onAction="#handleOperation"/>
+
+        <!-- Fila 4 (1, 2, 3, Operadores) -->
+        <Button text="1" GridPane.rowIndex="3" GridPane.columnIndex="0" maxWidth="Infinity" style="-fx-font-size: 14pt;" onAction="#handleNumber"/>
+        <Button text="2" GridPane.rowIndex="3" GridPane.columnIndex="1" maxWidth="Infinity" style="-fx-font-size: 14pt;" onAction="#handleNumber"/>
+        <Button text="3" GridPane.rowIndex="3" GridPane.columnIndex="2" maxWidth="Infinity" style="-fx-font-size: 14pt;" onAction="#handleNumber"/>
+        <Button text="-" GridPane.rowIndex="3" GridPane.columnIndex="3" maxWidth="Infinity" style="-fx-font-size: 14pt; -fx-background-color: #ffe599;" onAction="#handleOperation"/>
+        <Button text="Enter" GridPane.rowIndex="3" GridPane.columnIndex="4" maxWidth="Infinity" style="-fx-font-size: 14pt; -fx-background-color: #90ee90;" onAction="#handleEnter"/>
+
+        <!-- Fila 5 (0, ., +, = (Evaluar) -->
+        <Button text="0" GridPane.rowIndex="4" GridPane.columnIndex="0" maxWidth="Infinity" style="-fx-font-size: 14pt;" onAction="#handleNumber"/>
+        <Button text="." GridPane.rowIndex="4" GridPane.columnIndex="1" maxWidth="Infinity" style="-fx-font-size: 14pt;" onAction="#handleDecimal"/>
+        <Button text="swap" GridPane.rowIndex="4" GridPane.columnIndex="2" maxWidth="Infinity" style="-fx-font-size: 14pt; -fx-background-color: #add8e6;" onAction="#handleSwap"/>
+        <Button text="+" GridPane.rowIndex="4" GridPane.columnIndex="3" maxWidth="Infinity" style="-fx-font-size: 14pt; -fx-background-color: #ffe599;" onAction="#handleOperation"/>
+        <Button text="Eval" GridPane.rowIndex="4" GridPane.columnIndex="4" maxWidth="Infinity" style="-fx-font-size: 14pt; -fx-background-color: #007bff; -fx-text-fill: white;" onAction="#handleEvaluate"/>
+
+    </GridPane>
+</VBox>
