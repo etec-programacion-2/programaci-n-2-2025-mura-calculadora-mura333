@@ -3,61 +3,42 @@ package org.example
 import javafx.application.Application
 import javafx.fxml.FXMLLoader
 import javafx.scene.Scene
+import javafx.scene.layout.AnchorPane
 import javafx.stage.Stage
-import kotlin.system.exitProcess
+import java.io.IOException
 
-/**
- * Clase principal de JavaFX.
- * Se encarga de inicializar y mostrar la ventana principal, cargando el FXML.
- * NOTA: Utiliza VBox y Scene, sin necesidad de Canvas para este layout.
- */
 class AppFX : Application() {
 
-    override fun start(primaryStage: Stage) {
-        try {
-            // 1. Obtener la URL del archivo FXML.
-            // Busca 'CalculatorUI.fxml' en la raíz del classpath (src/main/resources).
-            val fxmlResource = javaClass.getResource("/CalculatorUI.fxml")
+    @Throws(IOException::class)
+    override fun start(stage: Stage) {
+        // Obtiene la URL del FXML desde la raíz de los recursos (src/main/resources/).
+        // NOTA: El '/' inicial es crucial para buscar desde la raíz del classpath.
+        val fxmlUrl = AppFX::class.java.getResource("/calculatorUI.fxml")
 
-            if (fxmlResource == null) {
-                // Mensaje de error si el archivo no se encuentra.
-                throw IllegalStateException("❌ FXML no encontrado. Asegúrese de que 'CalculatorUI.fxml' esté en la carpeta src/main/resources/ (raíz).")
-            }
-
-            // 2. Cargar el FXML usando la URL.
-            val fxmlLoader = FXMLLoader(fxmlResource)
-
-            // El nodo raíz cargado es el VBox definido en CalculatorUI.fxml
-            val root = fxmlLoader.load<javafx.scene.layout.VBox>()
-
-            // 3. Crear la escena
-            val scene = Scene(root)
-
-            // 4. Configurar el Stage (Ventana)
-            primaryStage.title = "Calculadora RPN Científica"
-            primaryStage.scene = scene
-
-            // Ajustes finales
-            primaryStage.sizeToScene()
-            primaryStage.isResizable = false
-
-            // 5. Mostrar la ventana.
-            primaryStage.show()
-
-        } catch (e: IllegalStateException) {
-            // Manejar errores de recursos no encontrados
-            println("❌ ERROR DE RECURSO: ${e.message}")
-            exitProcess(1)
-        } catch (e: Exception) {
-            // Manejo de otros errores (por ejemplo, errores en FXML o en el Controller)
-            println("❌ Error crítico al iniciar la aplicación JavaFX:")
-            e.printStackTrace()
-            exitProcess(1)
+        if (fxmlUrl == null) {
+            println("Error: No se encontró calculatorUI.fxml.")
+            // Mensaje de error ajustado para indicar la ubicación esperada.
+            throw IOException("El recurso FXML (calculatorUI.fxml) no fue encontrado. Verifique que esté en la ruta de recursos: /src/main/resources/.")
         }
-    }
-}
 
-// Función main que lanza la aplicación
-fun main() {
-    Application.launch(AppFX::class.java)
+        val fxmlLoader = FXMLLoader(fxmlUrl)
+
+        // El elemento raíz del FXML es AnchorPane.
+        val root: AnchorPane = fxmlLoader.load()
+
+        // Altura ajustada para el nuevo diseño de botones.
+        val scene = Scene(root, 300.0, 480.0)
+
+        // Cargar el CSS (styles.css) desde la raíz de los recursos.
+        val cssResource = AppFX::class.java.getResource("/styles.css")
+        if (cssResource != null) {
+            scene.stylesheets.add(cssResource.toExternalForm())
+        } else {
+            println("Advertencia: No se encontró styles.css.")
+        }
+
+        stage.title = "RPN Calculator"
+        stage.scene = scene
+        stage.show()
+    }
 }
