@@ -4,124 +4,284 @@ import javafx.fxml.FXML
 import javafx.scene.control.Button
 import javafx.scene.control.TextField
 import javafx.event.ActionEvent
+import javafx.scene.input.KeyEvent
+import javafx.scene.input.KeyCode
+import javafx.application.Platform
+import java.util.Locale
 
 /**
  * Clase controladora para la interfaz de la calculadora RPN.
- * Esta clase maneja todos los eventos de la interfaz y contiene la lógica de interacción.
+ * Gestiona la interacción del usuario y coordina la lógica RPN.
  */
 class CalculatorController {
 
-    // @FXML inyecta el TextField definido en CalculatorUI.fxml (fx:id="displayTextField")
     @FXML
-    private lateinit var displayTextField: TextField
+    lateinit var displayTextField: TextField
 
-    // String que almacena la expresión RPN actual para ser evaluada
+    // La expresión RPN actual que se está construyendo (ej: "1 2 + 3 *")
     private var currentExpression: String = ""
+    // Indica si el display muestra un resultado final o un error (para reiniciar la entrada)
+    private var isResultDisplay = false
 
-    // Componentes del Core (Se inicializan aquí, en una aplicación real usaríamos inyección de dependencia)
-    private val evaluator = RpnEvaluator()
+    // Inicialización de la lógica RPN
+    private val calculadora = Calculadora(OperationRegistry)
     private val parser = RpnParser()
+    private val evaluator = RpnEvaluator(calculadora)
 
-    // --- Métodos de Evento (Conectados con onAction en el FXML) ---
-
-    // Maneja la pulsación de los botones numéricos (0-9)
     @FXML
-    private fun handleNumber(event: ActionEvent) {
-        val button = event.source as Button
-        // Simplemente añadimos el número al final de la expresión
-        currentExpression += button.text
-        updateDisplay()
+    fun initialize() {
+        // Crucial: Asegura que el foco inicial esté en el TextField para la entrada por teclado.
+        Platform.runLater {
+            displayTextField.requestFocus()
+
+            // Listener para mantener el foco en el TextField
+            displayTextField.focusedProperty().addListener { _, _, isNowFocused ->
+                if (!isNowFocused) {
+                    displayTextField.requestFocus()
+                }
+            }
+        }
     }
 
-    // Maneja el botón decimal
+    // ----------------------------------------------------
+    // --- Lógica de Manejo de Entrada (Números, Decimales y Espacio)
+    // ----------------------------------------------------
+
+    /**
+     * Agrega un dígito a la expresión actual.
+     */
+    private fun handleNumberInput(digit: String) {
+        if (isResultDisplay) {
+            currentExpression = ""
+            isResultDisplay = false
+        }
+
+        // Si el último token fue un operador o función, insertamos un espacio para el número.
+        val lastToken = currentExpression.substringAfterLast(' ', "")
+        if (OperationRegistry.obtener(lastToken) != null) {
+            currentExpression += " "
+        }
+
+        currentExpression += digit
+        updateDisplay()
+        displayTextField.positionCaret(currentExpression.length)
+    }
+
+    /**
+     * Agrega un punto decimal.
+     */
     @FXML
-    private fun handleDecimal() {
-        // Lógica simple: asegurar que no haya ya un punto en el último número
-        if (currentExpression.isEmpty() || currentExpression.endsWith(" ")) {
+    fun handleDecimal() {
+        if (isResultDisplay) handleClear()
+
+        val lastToken = currentExpression.substringAfterLast(' ', "")
+
+        // Evita múltiples puntos en el mismo número
+        if (lastToken.contains(".")) {
+            return
+        }
+
+        if (lastToken.isEmpty() || currentExpression.endsWith(' ')) {
             currentExpression += "0."
-        } else if (!currentExpression.split(" ").last().contains(".")) {
+        } else {
             currentExpression += "."
         }
         updateDisplay()
+        displayTextField.positionCaret(currentExpression.length)
     }
 
-    // Maneja la tecla 'Enter' o espacio, separando el número actual
+    /**
+     * MÉTODO VINCULADO AL BOTÓN "Esp". Agrega un espacio para separar tokens RPN.
+     */
     @FXML
-    private fun handleEnter() {
-        if (currentExpression.isNotEmpty() && !currentExpression.endsWith(" ")) {
-            currentExpression += " " // Añade un espacio para separar el número de la operación siguiente
+    fun handleSpace() {
+        if (isResultDisplay) {
+            isResultDisplay = false
         }
-        updateDisplay()
-    }
-
-    // Maneja los botones de operación (+, *, sen, pow, etc.)
-    @FXML
-    private fun handleOperation(event: ActionEvent) {
-        val button = event.source as Button
-        val operator = button.text
-
-        // Primero, aseguramos un espacio si hay un número previo
-        if (currentExpression.isNotEmpty() && !currentExpression.endsWith(" ")) {
+        // Solo agrega espacio si no está vacío y el último caracter no es ya un espacio.
+        if (currentExpression.isNotEmpty() && currentExpression.last() != ' ') {
             currentExpression += " "
         }
-        // Luego, añadimos el operador, seguido de un espacio (para RPN)
-        currentExpression += "$operator "
         updateDisplay()
+        displayTextField.positionCaret(currentExpression.length)
     }
 
-    // Botón de Borrar Último Carácter (DEL)
+    // ----------------------------------------------------
+    // --- MANEJO DE TECLADO FÍSICO
+    // ----------------------------------------------------
+
     @FXML
-    private fun handleDelete() {
-        if (currentExpression.isNotEmpty()) {
-            currentExpression = currentExpression.substring(0, currentExpression.length - 1)
+    fun handleKeyPress(event: KeyEvent) {
+        val key = event.code
+        val text = event.text.lowercase()
+        var consumed = true
+
+        when {
+            key == KeyCode.SPACE -> handleSpace()
+            key == KeyCode.ENTER -> handleEvaluate()
+            key == KeyCode.BACK_SPACE -> handleBackspace()
+            text.matches(Regex("[0-9]")) -> handleNumberInput(text)
+            text == "." || text == "," -> handleDecimal() // Acepta punto o coma
+
+            // Mapeo de operaciones comunes por teclado
+            text == "+" -> handleOperationInput("+")
+            text == "-" -> handleOperationInput("-")
+            text == "*" -> handleOperationInput("*")
+            text == "/" -> handleOperationInput("/")
+
+            // Mapeo para funciones trigonométricas y potencia
+            // El usuario puede teclear "s", "c", "t" o "^" para las operaciones completas.
+            text == "s" -> handleOperationInput("sin")
+            text == "c" -> handleOperationInput("cos")
+            text == "t" -> handleOperationInput("tan")
+            text == "^" -> handleOperationInput("pow")
+
+            else -> consumed = false
         }
+
+        if (consumed) {
+            event.consume()
+        }
+    }
+
+    private fun handleBackspace() {
+        if (isResultDisplay) {
+            handleClear()
+            return
+        }
+        if (currentExpression.isNotEmpty()) {
+            currentExpression = currentExpression.dropLast(1).trimEnd()
+            updateDisplay()
+            displayTextField.positionCaret(currentExpression.length)
+        }
+    }
+
+
+    // ----------------------------------------------------
+    // --- MANEJO DE BOTONES (Eventos FXML)
+    // ----------------------------------------------------
+
+    @FXML
+    private fun handleNumber(event: ActionEvent) {
+        val button = event.source as Button
+        handleNumberInput(button.text)
+    }
+
+    @FXML
+    fun handleOperation(event: ActionEvent) {
+        val button = event.source as Button
+        handleOperationInput(button.text)
+    }
+
+    private fun handleOperationInput(symbol: String) {
+        if (isResultDisplay) {
+            isResultDisplay = false
+        }
+
+        if (currentExpression.isNotEmpty() && currentExpression.last() != ' ') {
+            currentExpression += " "
+        }
+        currentExpression += symbol
+        updateDisplay()
+        displayTextField.positionCaret(currentExpression.length)
+    }
+
+    @FXML
+    fun handleClear() {
+        currentExpression = ""
+        isResultDisplay = false
         updateDisplay()
     }
 
-    // Botón de Limpiar todo (CLR)
     @FXML
-    private fun handleClear() {
-        currentExpression = ""
-        displayTextField.text = ""
+    fun handleNegate() {
+        if (isResultDisplay) handleClear()
+
+        val tokens = currentExpression.split(' ').filter { it.isNotEmpty() }.toMutableList()
+        if (tokens.isNotEmpty()) {
+            val number = tokens.last().toDoubleOrNull()
+            if (number != null) {
+                tokens[tokens.lastIndex] = (-number).toString()
+                currentExpression = tokens.joinToString(" ")
+                updateDisplay()
+                displayTextField.positionCaret(currentExpression.length)
+            }
+        }
     }
 
-    // Placeholder: El botón 'Eval' (Evaluación final)
+    @FXML
+    fun handleSwap() {
+        if (isResultDisplay) handleClear()
+
+        val tokens = currentExpression.split(' ').filter { it.isNotEmpty() }.toMutableList()
+        if (tokens.size >= 2) {
+            val temp = tokens[tokens.lastIndex]
+            tokens[tokens.lastIndex] = tokens[tokens.lastIndex - 1]
+            tokens[tokens.lastIndex - 1] = temp
+            currentExpression = tokens.joinToString(" ")
+            updateDisplay()
+            displayTextField.positionCaret(currentExpression.length)
+        }
+    }
+
+    @FXML
+    fun handleEnter() {
+        handleEvaluate()
+    }
+
+    // ----------------------------------------------------
+    // --- Lógica de Cálculo y Vista (CON FORMATO DE RESULTADO FINAL)
+    // ----------------------------------------------------
+
     @FXML
     private fun handleEvaluate() {
         try {
-            // 1. Limpiamos la expresión de espacios redundantes
             val inputToParse = currentExpression.trim()
+            if (inputToParse.isEmpty()) return
 
-            if (inputToParse.isEmpty()) {
-                displayTextField.text = "Error: Expresión vacía"
+            val tokens = parser.parse(inputToParse)
+            if (tokens.isEmpty()) {
+                updateDisplay()
                 return
             }
 
-            // 2. Tokenizar y evaluar
-            val tokens = parser.parse(inputToParse)
             val result = evaluator.evaluate(tokens)
 
-            // 3. Mostrar el resultado y reiniciar la expresión para la próxima operación
-            displayTextField.text = result.toString()
-            currentExpression = result.toString() // El resultado se convierte en el primer operando de la siguiente expresión
+            // Usamos Locale.US para forzar el punto decimal en el String.format
+            val resultString = String.format(Locale.US, "%.10f", result)
+                .trimEnd('0')
+                .trimEnd('.') // Esto soluciona el problema de la "," o "." al final
+                .let {
+                    // Maneja el caso de -0.0
+                    if (it == "-0") "0" else it
+                }
+
+            displayTextField.text = resultString
+            currentExpression = resultString
+            isResultDisplay = true
 
         } catch (e: Exception) {
-            // Manejo de errores de RPN (división por cero, expresión mal formada, etc.)
-            displayTextField.text = "Error: ${e.message}"
-            currentExpression = "" // Reseteamos después de un error grave
+            val errorMessage = when(e.message) {
+                "Expresión mal formada" -> "Error: Exp. inválida"
+                "No se puede dividir por cero" -> "Error: Div/0"
+                "No se puede calcular raíz de número negativo" -> "Error: Raíz negativa"
+                "Tangente indefinida para este ángulo" -> "Error: Tan indefinida"
+                else -> "Error: ${e.message ?: "Desconocido"}"
+            }
+            displayTextField.text = errorMessage
+            currentExpression = ""
+            isResultDisplay = true
         }
     }
 
-    // Placeholder: Botón de Intercambio (Swap) para RPN
-    @FXML
-    private fun handleSwap() {
-        // Implementación futura: Intercambiar los dos últimos elementos en la pila
-        displayTextField.text = "Función SWAP (Pendiente)"
-    }
-
-    // Método privado para actualizar el TextField
     private fun updateDisplay() {
-        // Muestra la expresión RPN actual en la pantalla
-        displayTextField.text = currentExpression.trim()
+        val displayValue = if (currentExpression.isEmpty()) "0" else currentExpression
+
+        displayTextField.text = displayValue
+
+        Platform.runLater {
+            displayTextField.requestFocus()
+            displayTextField.positionCaret(displayValue.length)
+        }
     }
 }

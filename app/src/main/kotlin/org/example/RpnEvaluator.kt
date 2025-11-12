@@ -1,6 +1,7 @@
 package org.example
 
-class RpnEvaluator { // Ya no necesita Calculadora en el constructor
+// Constructor con un solo argumento: Calculadora
+class RpnEvaluator(private val calculadora: Calculadora) {
 
     fun evaluate(tokens: List<String>): Double {
         val pila = mutableListOf<Double>()
@@ -9,17 +10,18 @@ class RpnEvaluator { // Ya no necesita Calculadora en el constructor
             if (token.toDoubleOrNull() != null) {
                 pila.add(token.toDouble())
             } else {
+                // El Evaluador usa el OperationRegistry directamente para encontrar la Operación.
                 val operacion = OperationRegistry.obtener(token)
                     ?: throw IllegalArgumentException("Operador '$token' no soportado")
 
                 val numOperandos = operacion.numOperandos
 
                 if (pila.size < numOperandos) {
-                    throw IllegalArgumentException("Expresión mal formada: se esperaban $numOperandos operandos para '$token'")
+                    throw IllegalArgumentException("Expresión mal formada")
                 }
 
                 val operandosParaOperacion = mutableListOf<Double>()
-                // Extraer N operandos de la pila en orden [op1, op2, ...]
+                // Extraer N operandos de la pila
                 for (i in 1..numOperandos) {
                     operandosParaOperacion.add(0, pila.removeLast())
                 }
@@ -28,46 +30,7 @@ class RpnEvaluator { // Ya no necesita Calculadora en el constructor
             }
         }
 
-        if (pila.size != 1) throw IllegalArgumentException("Expresión mal formada (pila final ${pila.size})")
+        if (pila.size != 1) throw IllegalArgumentException("Expresión mal formada")
         return pila[0]
-    }
-
-    fun explicarEvaluacion(tokens: List<String>) {
-        println("Pila: []")
-        val pila = mutableListOf<Double>()
-
-        for (token in tokens) {
-            if (token.toDoubleOrNull() != null) {
-                pila.add(token.toDouble())
-                println("→ \"$token\": $pila")
-            } else {
-                val operacion = OperationRegistry.obtener(token)
-                    ?: throw IllegalArgumentException("Operador '$token' no soportado")
-
-                val numOperandos = operacion.numOperandos
-
-                if (pila.size < numOperandos) {
-                    throw IllegalArgumentException("Expresión mal formada: se esperaban $numOperandos operandos para '$token'")
-                }
-
-                val operandosParaOperacion = mutableListOf<Double>()
-                for (i in 1..numOperandos) {
-                    operandosParaOperacion.add(0, pila.removeLast())
-                }
-
-                val resultado = operacion.ejecutar(operandosParaOperacion)
-
-                // Formato de explicación
-                val operacionStr = if (numOperandos == 1) {
-                    "$token(${operandosParaOperacion[0]})"
-                } else { // binario
-                    "${operandosParaOperacion[0]} $token ${operandosParaOperacion[1]}"
-                }
-
-                println("→ \"$token\": $pila    ($operacionStr = $resultado)")
-                pila.add(resultado)
-            }
-        }
-        println("Resultado final: ${pila[0]}")
     }
 }
